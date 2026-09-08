@@ -15,7 +15,13 @@ def get_song(q: str):
             'default_search': 'ytsearch1',
             'noplaylist': True,
             'quiet': True,
-            'extractor_args': {'youtube': {'player_client': ['android', 'web']}}
+            'geo_bypass': True,
+            'nocheckcertificate': True,
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['android', 'ios']
+                }
+            }
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
