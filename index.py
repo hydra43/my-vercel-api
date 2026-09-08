@@ -15,11 +15,10 @@ def get_song(q: str):
             'default_search': 'ytsearch1',
             'noplaylist': True,
             'quiet': True,
-            'geo_bypass': True,
-            'nocheckcertificate': True,
+            'skip_download': True,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['android', 'ios']
+                    'player_client': ['mweb']
                 }
             }
         }
@@ -33,6 +32,13 @@ def get_song(q: str):
                 
             title = video_info.get('title', 'Unknown Title')
             audio_url = video_info.get('url', '')
+            
+            if not audio_url:
+                formats = video_info.get('formats', [])
+                for f in formats:
+                    if f.get('url') and f.get('acodec') != 'none':
+                        audio_url = f['url']
+                        break
             
             if not audio_url:
                 raise HTTPException(status_code=404, detail="Audio URL not found")
