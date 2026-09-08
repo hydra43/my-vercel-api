@@ -11,20 +11,24 @@ def root():
 def get_song(q: str):
     try:
         ydl_opts = {
-            'format': 'bestaudio/best',
+            'format': 'bestaudio',
             'default_search': 'ytsearch1',
             'noplaylist': True,
             'quiet': True,
             'skip_download': True,
+            'socket_timeout': 30,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['mweb']
+                    'player_client': ['web_creator']
                 }
             }
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(q, download=False)
+            # যদি সরাসরি ইউটিউব লিংক না দিয়ে কুয়েরি বা নাম দেওয়া হয়
+            search_query = q if q.startswith("http") else f"ytsearch:{q}"
+            info = ydl.extract_info(search_query, download=False)
+            
             if 'entries' in info:
                 video_info = info['entries'][0]
             else:
