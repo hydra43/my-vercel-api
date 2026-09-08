@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException
 import subprocess
-import json
 
 app = FastAPI()
 
@@ -11,7 +10,7 @@ def root():
 @app.get("/api/song")
 def get_song(q: str):
     try:
-        # yt-dlp ব্যবহার করে ইউটিউব থেকে গান সার্চ বা ডাউনলোড লিংক বের করার লজিক
+        # yt-dlp ব্যবহার করে ইউটিউব থেকে গান বা অডিওর তথ্য খোঁজার লজিক
         ydl_opts = [
             "yt-dlp",
             f"ytsearch1:{q}",
