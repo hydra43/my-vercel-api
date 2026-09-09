@@ -3,16 +3,15 @@ import yt_dlp
 
 app = FastAPI()
 
-@app.get("/api")
+@app.get("/")
 def root():
     return {"status": "success", "message": "API is online and ready!"}
 
-@app.get("/api/song")
-def get_song(q: str):
+@app.get("/ytsearch")
+def yt_search(q: str):
     try:
         ydl_opts = {
-            'format': 'bestaudio',
-            'default_search': 'ytsearch1',
+            'default_search': 'ytsearch5',
             'noplaylist': True,
             'quiet': True,
             'skip_download': True,
@@ -25,20 +24,49 @@ def get_song(q: str):
         }
         
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # যদি সরাসরি ইউটিউব লিংক না দিয়ে কুয়েরি বা নাম দেওয়া হয়
-            search_query = q if q.startswith("http") else f"ytsearch:{q}"
-            info = ydl.extract_info(search_query, download=False)
+            info = ydl.extract_info(f"ytsearch5:{q}", download=False)
+            entries = info.get('entries', [])
             
-            if 'entries' in info:
-                video_info = info['entries'][0]
-            else:
-                video_info = info
+            results = []
+            for entry in entries:
+                results.append({
+                    "title": entry.get('title', 'Unknown Title'),
+                    "url": f"https://www.youtube.com/watch?v={entry.get('id')}",
+                    "duration": entry.get('duration_string', 'N/A'),
+                    "channel": entry.get('uploader', 'Unknown'),
+                    "thumbnail": entry.get('thumbnail', '')
+                })
                 
-            title = video_info.get('title', 'Unknown Title')
-            audio_url = video_info.get('url', '')
+            return {"results": results}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/ytmp3")
+def yt_mp3(url: str):
+    try:
+        ydl_opts = {
+            'format': 'bestaudio',
+            'noplaylist': True,
+            'quiet': True,
+            'skip_download': True,
+            'socket_timeout': 30,
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['web_creator']
+                }
+            }
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            
+            title = info.get('title', 'Unknown Title')
+            author = info.get('uploader', 'Unknown')
+            audio_url = info.get('url', '')
             
             if not audio_url:
-                formats = video_info.get('formats', [])
+                formats = info.get('formats', [])
                 for f in formats:
                     if f.get('url') and f.get('acodec') != 'none':
                         audio_url = f['url']
@@ -48,9 +76,10 @@ def get_song(q: str):
                 raise HTTPException(status_code=404, detail="Audio URL not found")
                 
             return {
-                "status": "success",
+                "success": True,
                 "title": title,
-                "downloadUrl": audio_url
+                "author": author,
+                "url": audio_url
             }
             
     except Exception as e:
