@@ -18,7 +18,7 @@ def yt_search(q: str):
             'socket_timeout': 30,
             'extractor_args': {
                 'youtube': {
-                    'player_client': ['web_creator']
+                    'player_client': ['web', 'web_creator']
                 }
             }
         }
